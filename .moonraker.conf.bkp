@@ -103,3 +103,10 @@ trusted_clients =
 	::1/128
 	FD00::/8
 
+[update_manager ercf-happy_hare]
+type = git_repo
+path = ~/addon_plugins/ERCF-Software-V3
+origin = https://github.com/moggieuk/ERCF-Software-V3.git
+install_script = install.sh
+managed_services = klipper
+
