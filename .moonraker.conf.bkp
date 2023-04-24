@@ -110,3 +110,11 @@ origin = https://github.com/moggieuk/ERCF-Software-V3.git
 install_script = install.sh
 managed_services = klipper
 
+[update_manager pam]
+type = git_repo
+primary_branch = main
+path = ~/addon_plugins/pam
+origin = https://github.com/HelgeKeck/pam.git
+is_system_service = False
+managed_services = klipper
+
