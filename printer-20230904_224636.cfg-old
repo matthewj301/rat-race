@@ -12,9 +12,6 @@
 
 # Read more about klipper here: https://www.klipper3d.org/Overview.html
 
-[include mmu/base/*.cfg]
-#[include mmu/optional/mmu_menu.cfg]
-
 #############################################################################################################
 ### CONTROL BOARD
 ### Pick the board you have installed and wired in your printer.
@@ -59,7 +56,7 @@ pins: !PD12, !PD13, !PD14, PD15
 # This increases motor torque, positional accuracy and speed limits.
 # don't enable this before your printer is fully configured and you have a fan blowing on your stepper drivers.
 [include RatOS/printers/v-core-3/speed-limits-performance.cfg]
-[include custom/v-core-3/tmc2209-performance.cfg]
+[include RatOS/printers/v-core-3/tmc2209-performance.cfg]
 [include RatOS/steppers/ldo/42sth48-2504ac/2209/24v-1.6a-x.cfg]
 [include RatOS/steppers/ldo/42sth48-2504ac/2209/24v-1.6a-y.cfg]
 [include RatOS/steppers/ldo/42sth48-2504ac/2209/24v-1.6a-z.cfg]
@@ -131,15 +128,12 @@ pins: !PD12, !PD13, !PD14, PD15
 ### TOOLHEAD
 ### Pick your extruder and hotend
 #############################################################################################################
-
 # Extruder
-#### MOVED TO Happy Hare Configs! ######
-
 #[include RatOS/extruders/bmg.cfg]
 #[include RatOS/extruders/lgx.cfg]
 #[include RatOS/extruders/lgx-lite.cfg]
 #[include RatOS/extruders/orbiter.cfg]
-#[include RatOS/extruders/orbiter-2.cfg]
+[include RatOS/extruders/orbiter-2.cfg]
 #[include RatOS/extruders/hemera.cfg]
 #[include RatOS/extruders/titan.cfg]
 
@@ -235,23 +229,20 @@ probe_points:
 #############################################################################################################
 [include RatOS/boards/btt-ebb42-12/toolboard-config.cfg]
 
-[include custom/toolboards/toolboard.cfg]
+[include RatOS/boards/toolboard.cfg]
 
 [include RatOS/toolboard/input-shaper.cfg]
 
 [extruder]
 sensor_type: PT1000
-dir_pin: !toolboard:e_dir_pin
 nozzle_diameter: 0.6
-filament_diameter: 1.750
-full_steps_per_rotation: 200
+dir_pin: !toolboard:e_dir_pin
 microsteps: 16
 max_extrude_only_velocity: 120
 max_extrude_only_distance: 500
 max_extrude_cross_section: 5
 pressure_advance_smooth_time: 0.03
 min_extrude_temp: 185
-
 
 #control: pid
 #pid_kp: 28.413
@@ -270,6 +261,10 @@ rotation_distance: 40
 ### USER OVERRIDES
 ### Anything custom you want to add, or RatOS configuration you want to override, do it here.
 #############################################################################################################
+[include custom/ercf/ercf_hardware.cfg]
+[include custom/ercf/ercf_parameters.cfg]
+[include custom/ercf/ercf_software.cfg]
+
 [include custom/client_macros.cfg]
 
 [include custom/fans/*]
