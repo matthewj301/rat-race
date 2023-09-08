@@ -167,11 +167,29 @@ gcode:
 	# Reset stowable probe stop on error state
 	SET_GCODE_VARIABLE MACRO=RatOS VARIABLE=stowable_probe_stop_on_error VALUE={prev_stop_on_error}
 
+[delayed_gcode RESUME_AFTER_TOOLCHANGE]
+gcode:
+  {% if printer.pause_resume.is_paused %}
+    RESUME
+  {% else %}
+    CLEAR_PAUSE
+    RESTORE_GCODE_STATE NAME=ercf_filament_change MOVE=1 MOVE_SPEED={printer["gcode_macro RatOS"].macro_travel_speed|float}
+  {% endif %}
+
+[gcode_macro CHANGE_ERCF_TOOL]
+gcode:
+  {% set ERCF_TOOL = params.NEXT_TOOL %}
+  MMU_CHANGE_TOOL_STANDALONE TOOL={ERCF_TOOL}
+  UPDATE_DELAYED_GCODE ID=RESUME_AFTER_TOOLCHANGE DURATION=1
+
+
 [gcode_macro PARK_AND_CHANGE_TOOL]
 description: Park, change tool, and unpark
 gcode:
   {% set ERCF_TOOL = params.NEXT_TOOL %}
-  T{ERCF_TOOL}
+  SAVE_GCODE_STATE NAME=ercf_filament_change
+  PAUSE
+  CHANGE_ERCF_TOOL NEXT_TOOL={ERCF_TOOL}
   
 
 
