@@ -57,7 +57,7 @@ managed_services = crowsnest
 [update_manager timelapse]
 type = git_repo
 primary_branch = main
-path = ~/moonraker-timelapse
+path = /home/pi/addon_plugins/moonraker-timelapse
 origin = https://github.com/mainsail-crew/moonraker-timelapse.git
 managed_services = klipper moonraker
 
@@ -76,10 +76,11 @@ managed_services =
 [update_manager KlipperScreen]
 type = git_repo
 path = ~/KlipperScreen
-origin = https://github.com/jordanruthe/KlipperScreen.git
+origin = https://github.com/moggieuk/KlipperScreen-Happy-Hare-Edition.git
 env = ~/.KlipperScreen-env/bin/python
 requirements = scripts/KlipperScreen-requirements.txt
 install_script = scripts/KlipperScreen-install.sh
+managed_services = KlipperScreen
 
 [update_manager beacon]
 type = git_repo
@@ -117,16 +118,28 @@ trusted_clients =
 	::1/128
 	FD00::/8
 
-[update_manager ercf-happy_hare]
+[update_manager klipper_tmc_autotune]
 type = git_repo
-path = ~/addon_plugins/ERCF-Software-V3
-origin = https://github.com/moggieuk/ERCF-Software-V3.git
+channel = dev
+path = ~/klipper_tmc_autotune
+origin = https://github.com/andrewmcgr/klipper_tmc_autotune.git
+managed_services = klipper
+primary_branch = main
+install_script = install.sh
+
+[update_manager happy-hare]
+type = git_repo
+path = /home/pi/addon_plugins/Happy-Hare
+origin = https://github.com/moggieuk/Happy-Hare.git
+primary_branch = main
 install_script = install.sh
 managed_services = klipper
 
-[update_manager z_calibration]
-type = git_repo
-path = /home/pi/addon_plugins/klipper_z_calibration
-origin = https://github.com/protoloft/klipper_z_calibration.git
-managed_services = klipper
+[timelapse]
+output_path = ~/printer_data/timelapse/
+frame_path = /tmp/timelapse/printer
+
+[mmu_server]
+enable_file_preprocessor = True
+enable_toolchange_next_pos = True
 
