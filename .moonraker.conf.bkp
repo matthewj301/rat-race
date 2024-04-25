@@ -143,3 +143,7 @@ frame_path = /tmp/timelapse/printer
 enable_file_preprocessor = True
 enable_toolchange_next_pos = True
 
+[spoolman]
+server = http://192.168.30.2:8000
+sync_rate = 5
+
