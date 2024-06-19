@@ -159,5 +159,5 @@ enable_toolchange_next_pos = True
 
 [spoolman]
 server = http://192.168.30.2:8000
-sync_rate = 5
+sync_rate = 10
 
