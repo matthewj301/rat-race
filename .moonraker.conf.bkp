@@ -161,3 +161,10 @@ enable_toolchange_next_pos = True
 server = http://192.168.30.2:8000
 sync_rate = 10
 
+[update_manager motors-sync]
+type = git_repo
+path = /home/pi/addon_plugins/motors-sync/
+origin = https://github.com/MRX8024/motors-sync.git
+primary_branch = main
+managed_services = klipper
+
