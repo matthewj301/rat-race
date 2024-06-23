@@ -125,9 +125,10 @@ trusted_clients =
 	127.0.0.1
 	10.0.0.0/8
 	127.0.0.0/8
-	169.254.0.0/16
 	172.16.0.0/12
-	192.168.0.0/16
+	192.168.1.0/24
+	192.168.20.0/24
+	192.168.50.0/24
 	FE80::/10
 	::1/128
 	FD00::/8
@@ -149,6 +150,13 @@ primary_branch = main
 install_script = install.sh
 managed_services = klipper
 
+[update_manager motors-sync]
+type = git_repo
+path = /home/pi/addon_plugins/motors-sync/
+origin = https://github.com/MRX8024/motors-sync.git
+primary_branch = main
+managed_services = klipper
+
 [timelapse]
 output_path = ~/printer_data/timelapse/
 frame_path = /tmp/timelapse/printer
@@ -160,11 +168,4 @@ enable_toolchange_next_pos = True
 [spoolman]
 server = http://192.168.30.2:8000
 sync_rate = 10
-
-[update_manager motors-sync]
-type = git_repo
-path = /home/pi/addon_plugins/motors-sync/
-origin = https://github.com/MRX8024/motors-sync.git
-primary_branch = main
-managed_services = klipper
 
