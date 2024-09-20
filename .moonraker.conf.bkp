@@ -63,7 +63,7 @@ managed_services = crowsnest
 [update_manager timelapse]
 type = git_repo
 primary_branch = main
-path = /home/pi/addon_plugins/moonraker-timelapse
+path = ~/addon_plugins/moonraker-timelapse
 origin = https://github.com/mainsail-crew/moonraker-timelapse.git
 managed_services = klipper moonraker
 
@@ -153,7 +153,7 @@ managed_services = klipper
 
 [update_manager motors-sync]
 type = git_repo
-path = /home/pi/addon_plugins/motors-sync/
+path = ~/addon_plugins/motors-sync/
 origin = https://github.com/MRX8024/motors-sync.git
 primary_branch = main
 managed_services = klipper
@@ -173,7 +173,7 @@ sync_rate = 10
 [update_manager Klippain-ShakeTune]
 type = git_repo
 origin = https://github.com/Frix-x/klippain-shaketune.git
-path = ~/klippain_shaketune
+path = ~/addon_plugins/klippain_shaketune
 virtualenv = ~/klippy-env
 requirements = requirements.txt
 system_dependencies = system-dependencies.json
