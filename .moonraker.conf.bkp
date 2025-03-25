@@ -10,7 +10,8 @@ subscriptions =
 	mainsail
 
 [file_manager]
-enable_object_processing = False
+enable_object_processing = True
+default_metadata_parser_timeout = 60
 
 [update_manager]
 refresh_interval = 168
@@ -154,16 +155,16 @@ primary_branch = main
 install_script = install.sh
 managed_services = klipper
 
+[timelapse]
+output_path = ~/printer_data/timelapse/
+frame_path = /tmp/timelapse/printer
+
 [update_manager motors-sync]
 type = git_repo
 path = ~/addon_plugins/motors-sync/
 origin = https://github.com/MRX8024/motors-sync.git
 primary_branch = main
 managed_services = klipper
-
-[timelapse]
-output_path = ~/printer_data/timelapse/
-frame_path = /tmp/timelapse/printer
 
 [mmu_server]
 enable_file_preprocessor = True
