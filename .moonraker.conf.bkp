@@ -43,8 +43,8 @@ info_tags =
 [update_manager mainsail]
 type = web
 channel = stable
-repo = mainsail-crew/mainsail
-path = ~/mainsail
+repo = moggieuk/mainsail-happy-hare-edition
+path = /home/pi/mainsail
 info_tags = 
 	desc=External: Mainsail Web Interface
 
@@ -159,13 +159,6 @@ managed_services = klipper
 output_path = ~/printer_data/timelapse/
 frame_path = /tmp/timelapse/printer
 
-[update_manager motors-sync]
-type = git_repo
-path = ~/addon_plugins/motors-sync/
-origin = https://github.com/MRX8024/motors-sync.git
-primary_branch = main
-managed_services = klipper
-
 [mmu_server]
 enable_file_preprocessor = True
 enable_toolchange_next_pos = True
@@ -173,6 +166,13 @@ enable_toolchange_next_pos = True
 [spoolman]
 server = http://192.168.30.2:8000
 sync_rate = 10
+
+[update_manager motors-sync]
+type = git_repo
+path = ~/addon_plugins/motors-sync/
+origin = https://github.com/MRX8024/motors-sync.git
+primary_branch = main
+managed_services = klipper
 
 [update_manager Klippain-ShakeTune]
 type = git_repo
@@ -189,6 +189,8 @@ type = web
 repo = Rat-OS/fluidd
 path = ~/fluidd
 channel = stable
+info_tags = 
+	desc: Experimental: Fluidd Web Interface (RatOS Fork)
 
 [update_manager FluiddTheme]
 type = git_repo
@@ -196,4 +198,6 @@ path = ~/printer_data/config/.fluidd-theme
 primary_branch = main
 origin = https://github.com/Rat-OS/fluidd-theme
 is_system_service = false
+info_tags = 
+	desc: Experimental: RatOS Fluidd Theme
 
