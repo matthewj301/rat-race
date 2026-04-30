@@ -13,16 +13,34 @@
   high_precision_step_compress, minimum_cruise_ratio
 - Dynamic macros system (.dynamicmacros.cfg is auto-generated stub)
 
+## Motor Slot Map (BTT Octopus MAX EZ V1.0)
+| Slot | Step/Dir/Enable | SPI CS | DIAG Pin | DIAG Jumper | Current Use |
+|------|----------------|--------|----------|:-----------:|-------------|
+| Motor1 | PC13/PC14/PE6 | PG14 | PF0 | Yes | stepper_x |
+| Motor2 | PE4/PE5/PE3 | PG13 | PF2 | Yes | stepper_y |
+| Motor3 | PE1/PE0/PE2 | PG12 | PF4 | Yes | extruder (on toolboard — free) |
+| Motor4 | PB8/PB9/PB7 | PG11 | PF3 | Yes | Free (was stepper_x) |
+| Motor5 | PB5/PB4/PB6 | PG10 | PF1 | Yes | z0 |
+| Motor6 | PG15/PB3/PD5 | PG9 | PC15 | Yes | z1 |
+| Motor7 | PD3/PD2/PD4 | PD7 | — | No | z2 |
+| Motor8 | PA10/PA9/PA15 | PD6 | — | No | Free |
+| Motor9 | PA8/PC7/PC9 | PG8 | — | No | stepper_y1 (AWD) |
+| Motor10 | PG6/PC6/PC8 | PG7 | — | No | stepper_x1 (AWD) |
+
+- DIAG jumpers only on Motor1–Motor6 (required for sensorless homing)
+- Manual: `manuals/BTT/Max EZ/`
+
 ## Key Files
 - `printer.cfg` — Main config with `_PRINTER_VARS` (all tunable settings)
 - `custom/macros/print.cfg` — PRINT_START, PRINT_END, PAUSE, RESUME, CANCEL, M600
 - `custom/macros/heating_cooling.cfg` — PREHEAT, COOLDOWN_SEQUENCE
+- `custom/macros/nozzle_cleaner.cfg` — CLEAN_NOZZLE, `_WIPER_VARS` (wiper coordinates/speeds)
 - `custom/macros/dynamic_macros/` — Toolhead-assisted chamber heating (recursive)
 - `custom/macros/thermal_expansion_compensation.cfg` — Beacon nozzle expansion
 - `klipper-variables.cfg` — Persistent saved variables (SAVE_VARIABLE target)
 - `docs/adr/` — Architecture Decision Records
 
-## Naming Conventions (ADR-0002)
+## Naming Conventions
 - Local variables: `snake_case` (e.g., `hotend_temp`, `travel_feedrate`)
 - Params: `UPPER_SNAKE_CASE` (e.g., `params.HOTEND_TEMP`)
 - Temperatures: `*_temp` suffix (never `_c`, `_target`)
@@ -41,7 +59,19 @@
   overwritten on reload, but stubs must parse without error at startup.
 - **Saved variables**: Changing names in `klipper-variables.cfg` requires migrating
   the file on the printer. Don't rename `variable_*` in saved vars casually.
-- **`printer['gcode'].commands['X']`**: Unstable internal API. May break on Klipper updates.
+- **`printer['gcode'].commands['X']`**: Unstable internal API. Prefer
+  `printer.configfile.config["gcode_macro X"] is defined` instead (see PRINT_START
+  for the established pattern).
+- **CLEAN_NOZZLE during PRINT_START**: Always pass `SKIP_HEATING=1` and restore
+  the Beacon contact cal temp (`M104` + `TEMPERATURE_WAIT`) before `G28 Z METHOD=CONTACT`.
+  Letting CLEAN_NOZZLE heat/cool independently destabilizes contact calibration.
+- **COOLDOWN_SEQUENCE filter ordering**: `TURN_FILTER_ON` must come *before*
+  `UPDATE_DELAYED_GCODE ID=FILTER_DELAYED_STOP`, and no `ALL_FANS_OFF` after it.
+  Otherwise the delayed stop fires on an already-off fan.
+- **Board pin aliases**: Always use `x_step_pin`, `y_uart_pin`, etc. from
+  `octopus-max-ez.cfg` board_pins — never hardcode GPIO numbers for Octopus
+  motor/endstop pins in stepper configs. Hardcoded pins silently break when a
+  motor slot is reassigned.
 
 ## Testing
 - No automated tests. Changes are verified by:
@@ -51,6 +81,10 @@
 - Changes are made locally in this repo, then pushed to the printer host for deployment.
 
 ## Style
+- **Indentation**: 2-space, no tabs. Upstream snippets (e.g., BeaconPrinterTools) often
+  use tabs — convert on paste.
 - `vars` = `printer["gcode_macro _PRINTER_VARS"]` (universal alias)
 - `svv` = `printer.save_variables.variables` (universal alias)
-- Prefer `_HELPER` prefix for internal-only macros (e.g., `_PARK_BASE`, `_CENTER_AXIS`)
+- `wv` = `printer["gcode_macro _WIPER_VARS"]` (nozzle cleaner alias)
+- `printer["gcode_macro CustomVariables"]` — per-print state (filament_type, slicer, skew_profile, nozzle_wiper_state)
+- Prefer `_HELPER` or `_VARS` prefix for internal-only macros (e.g., `_PARK_BASE`, `_CENTER_AXIS`, `_WIPER_VARS`)
