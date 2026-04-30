@@ -1,2 +1,7 @@
 RatOS-*
 printer-*
+mmu-20*
+.claude/settings.local.json
+CLAUDE.local.md
+manuals/*
+.claude/commands/*
