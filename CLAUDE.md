@@ -81,6 +81,7 @@
 - **COOLDOWN_SEQUENCE filter ordering**: `TURN_FILTER_ON` must come *before*
   `UPDATE_DELAYED_GCODE ID=FILTER_DELAYED_STOP`, and no `ALL_FANS_OFF` after it.
   Otherwise the delayed stop fires on an already-off fan.
+- **EBB36 Gen2 TMC2209 uart_address**: Must be `0` (wired to address 0 via MS1/MS2). If `uart_address: 3` is present (copied from a multi-driver Octopus config), all UART reads silently fail — writes appear to work because TMC2209 accepts broadcasts, reads get no response. Symptom: `Unable to read tmc uart 'extruder' register IFCNT` at boot, shutdown mid-move on `GCONF` read.
 - **Board pin aliases**: Always use `x_step_pin`, `y_uart_pin`, etc. from
   `octopus-max-ez.cfg` board_pins — never hardcode GPIO numbers for Octopus
   motor/endstop pins in stepper configs. Hardcoded pins silently break when a
