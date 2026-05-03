@@ -9,17 +9,18 @@
 - Servo-deployed nozzle wiper
 
 ## Firmware
-- Kalico (Klipper fork) with: z_tilt_ng, motors_sync, danger_options,
+- Kalico (Klipper fork) with: z_tilt_ng, danger_options,
   high_precision_step_compress, minimum_cruise_ratio
+- motors_sync module installed but currently disabled (`custom/tuning/disabled/`)
 - Dynamic macros system (.dynamicmacros.cfg is auto-generated stub)
 
 ## Motor Slot Map (BTT Octopus MAX EZ V1.0)
 | Slot | Step/Dir/Enable | SPI CS | DIAG Pin | DIAG Jumper | Current Use |
 |------|----------------|--------|----------|:-----------:|-------------|
-| Motor1 | PC13/PC14/PE6 | PG14 | PF0 | Yes | stepper_x |
+| Motor1 | PC13/PC14/PE6 | PG14 | PF0 | Yes | **DO NOT USE** — PC13 is VBAT-domain |
 | Motor2 | PE4/PE5/PE3 | PG13 | PF2 | Yes | stepper_y |
 | Motor3 | PE1/PE0/PE2 | PG12 | PF4 | Yes | extruder (on toolboard — free) |
-| Motor4 | PB8/PB9/PB7 | PG11 | PF3 | Yes | Free (was stepper_x) |
+| Motor4 | PB8/PB9/PB7 | PG11 | PF3 | Yes | stepper_x |
 | Motor5 | PB5/PB4/PB6 | PG10 | PF1 | Yes | z0 |
 | Motor6 | PG15/PB3/PD5 | PG9 | PC15 | Yes | z1 |
 | Motor7 | PD3/PD2/PD4 | PD7 | — | No | z2 |
@@ -28,6 +29,10 @@
 | Motor10 | PG6/PC6/PC8 | PG7 | — | No | stepper_x1 (AWD) |
 
 - DIAG jumpers only on Motor1–Motor6 (required for sensorless homing)
+- **Motor1 (PC13)**: VBAT-domain pin on STM32H723 with limited drive strength.
+  With dedge mode and 48V TMC5160s, phantom steps cause motor drift at idle.
+  Do not assign any stepper here.
+- CPAP fan signal on PB14 (BLTouch control header, active `[fan]` section)
 - Manual: `manuals/BTT/Max EZ/`
 
 ## Key Files
@@ -72,6 +77,9 @@
   `octopus-max-ez.cfg` board_pins — never hardcode GPIO numbers for Octopus
   motor/endstop pins in stepper configs. Hardcoded pins silently break when a
   motor slot is reassigned.
+- **klippy.log has multiple sessions**: Search for `Start printer at` to find
+  session boundaries. A config section or error in the log may be from an older
+  boot, not the current one. Always confirm which session you're reading.
 
 ## Testing
 - No automated tests. Changes are verified by:
@@ -79,6 +87,9 @@
   2. Cross-reference `printer["gcode_macro X"].variable_name` against declarations
   3. Verify param chains (e.g., TA_CHAMBER_HEAT → TA_CHAMBER_CYCLE)
 - Changes are made locally in this repo, then pushed to the printer host for deployment.
+- **Config sync**: Local repo and printer can diverge (automated backups,
+  Mainsail edits). When debugging, always diff the relevant files between
+  local and `pi@printer:/home/pi/printer_data/config/` first.
 
 ## Style
 - **Indentation**: 2-space, no tabs. Upstream snippets (e.g., BeaconPrinterTools) often
