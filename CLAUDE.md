@@ -37,7 +37,8 @@
 - Manual: `manuals/BTT/Max EZ/`
 
 ## BTT MMB Pin Notes
-- PA2 (`MMU_NEOPIXEL` alias): repurposed as EREC cutter servo — **not available for Neopixel**
+- PA2 (`MMU_NEOPIXEL` alias): repurposed as EREC cutter servo signal — **not available for Neopixel**
+- RGB port 5V is current-limited (insufficient for servo); servo power is taken from the i2c port 5V header instead
 - All other MMB aliases in `mmu/base/mmu.cfg` `[board_pins mmu]`
 
 ## Key Files
