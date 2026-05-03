@@ -5,7 +5,8 @@
 - BTT Octopus Max EZ V1.0 main MCU, EBB42 v1.2 toolboard
 - TMC5160 @ 48V (XY), TMC2209 @ 24V (Z)
 - Beacon RevH probe (contact mode, thermal expansion compensation)
-- Happy Hare MMU on dedicated MCU
+- Happy Hare MMU (Tradrack 1.0e, 8 gates) on BTT MMB dedicated MCU
+- EREC-style filament cutter on Tradrack, servo on BTT MMB PA2 (RGB port)
 - Servo-deployed nozzle wiper
 
 ## Firmware
@@ -35,6 +36,10 @@
 - CPAP fan signal on PB14 (BLTouch control header, active `[fan]` section)
 - Manual: `manuals/BTT/Max EZ/`
 
+## BTT MMB Pin Notes
+- PA2 (`MMU_NEOPIXEL` alias): repurposed as EREC cutter servo — **not available for Neopixel**
+- All other MMB aliases in `mmu/base/mmu.cfg` `[board_pins mmu]`
+
 ## Key Files
 - `printer.cfg` — Main config with `_PRINTER_VARS` (all tunable settings)
 - `custom/macros/print.cfg` — PRINT_START, PRINT_END, PAUSE, RESUME, CANCEL, M600
@@ -43,6 +48,8 @@
 - `custom/macros/dynamic_macros/` — Toolhead-assisted chamber heating (recursive)
 - `custom/macros/thermal_expansion_compensation.cfg` — Beacon nozzle expansion
 - `klipper-variables.cfg` — Persistent saved variables (SAVE_VARIABLE target)
+- `mmu/base/mmu_macro_vars.cfg` — Happy Hare macro tuning (tip forming, parking, post-unload extension)
+- `mmu/addons/mmu_erec_cutter.cfg` / `mmu_erec_cutter_hw.cfg` — EREC cutter servo config and action macro
 - `docs/adr/` — Architecture Decision Records
 
 ## Naming Conventions
