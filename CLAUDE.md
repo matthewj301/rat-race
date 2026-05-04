@@ -81,7 +81,7 @@
 - **COOLDOWN_SEQUENCE filter ordering**: `TURN_FILTER_ON` must come *before*
   `UPDATE_DELAYED_GCODE ID=FILTER_DELAYED_STOP`, and no `ALL_FANS_OFF` after it.
   Otherwise the delayed stop fires on an already-off fan.
-- **EBB36 Gen2 TMC2209 uart_address**: Must be `0` (wired to address 0 via MS1/MS2). If `uart_address: 3` is present (copied from a multi-driver Octopus config), all UART reads silently fail — writes appear to work because TMC2209 accepts broadcasts, reads get no response. Symptom: `Unable to read tmc uart 'extruder' register IFCNT` at boot, shutdown mid-move on `GCONF` read.
+- **Sub-config overwriting TMC UART pin**: Klipper merges duplicate sections last-definition-wins. If a sub-config included after your motor config redefines `[tmc2209 extruder]` with an unqualified `uart_pin: e_uart_pin`, and `e_uart_pin` is also defined on the main MCU board_pins (e.g. Octopus Motor3 slot = PG12), the pin silently resolves to the wrong MCU. Symptom: writes appear to work, all reads time out — identical to a hardware UART failure. Fix: qualify explicitly — `uart_pin: toolboard_t0:e_uart_pin`. When a setting seems correct but isn't taking effect, grep for the same section key in all included files.
 - **Board pin aliases**: Always use `x_step_pin`, `y_uart_pin`, etc. from
   `octopus-max-ez.cfg` board_pins — never hardcode GPIO numbers for Octopus
   motor/endstop pins in stepper configs. Hardcoded pins silently break when a
@@ -89,6 +89,13 @@
 - **klippy.log has multiple sessions**: Search for `Start printer at` to find
   session boundaries. A config section or error in the log may be from an older
   boot, not the current one. Always confirm which session you're reading.
+- **Klipper servo angle clamping**: `_get_pwm_from_angle` clamps to
+  `[0, maximum_servo_angle]` silently. An angle of 225 with max 180 just
+  produces the same pulse as 180. Increase `maximum_servo_angle` if you
+  genuinely need a wider range, or fix the variable to the clamped value.
+- **EREC cutter + loading**: `user_pre_load_extension` must be `"_CUTTER_CLOSE"`
+  so the servo aligns the bowden before every load. Without it, a fresh load
+  (no prior unload/cut) will fail because the servo is in an unknown position.
 
 ## Testing
 - No automated tests. Changes are verified by:
