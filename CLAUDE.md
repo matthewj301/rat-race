@@ -11,8 +11,9 @@
 
 ## Firmware
 - Kalico (Klipper fork) with: z_tilt_ng, danger_options,
-  high_precision_step_compress, minimum_cruise_ratio
-- motors_sync module installed but currently disabled (`custom/tuning/disabled/`)
+  high_precision_step_compress, minimum_cruise_ratio, limited_corexy
+- motors_sync module active (`custom/tuning/motor_sync.cfg`), called in PRINT_START
+- MPC extruder temp control (requires `MPC_CALIBRATE` on printer after deploy)
 - Dynamic macros system (.dynamicmacros.cfg is auto-generated stub)
 
 ## Motor Slot Map (BTT Octopus MAX EZ V1.0)
@@ -44,7 +45,7 @@
 ## Key Files
 - `printer.cfg` — Main config with `_PRINTER_VARS` (all tunable settings)
 - `custom/macros/print.cfg` — PRINT_START, PRINT_END, PAUSE, RESUME, CANCEL, M600
-- `custom/macros/heating_cooling.cfg` — PREHEAT, COOLDOWN_SEQUENCE
+- `custom/macros/heating_cooling.cfg` — PREHEAT, COOLDOWN_SEQUENCE, _SET_MPC_MATERIAL
 - `custom/macros/nozzle_cleaner.cfg` — CLEAN_NOZZLE, `_WIPER_VARS` (wiper coordinates/speeds)
 - `custom/macros/dynamic_macros/` — Toolhead-assisted chamber heating (recursive)
 - `custom/macros/thermal_expansion_compensation.cfg` — Beacon nozzle expansion
@@ -96,6 +97,20 @@
 - **EREC cutter + loading**: `user_pre_load_extension` must be `"_CUTTER_CLOSE"`
   so the servo aligns the bowden before every load. Without it, a fresh load
   (no prior unload/cut) will fail because the servo is in an unknown position.
+- **Happy Hare PAUSE/RESUME wrapping**: HH's Python module wraps PAUSE/RESUME
+  as the outermost layer (saves original as `__PAUSE`/`__RESUME`). Our macros
+  check `printer.mmu.enabled` and skip retraction/parking when HH is active
+  to avoid double-actions. HH does NOT manage standby temp for user-initiated
+  pauses — our macros handle that in both paths.
+- **Happy Hare `update_trsync` is a no-op on Kalico**: HH monkey-patches a
+  constant that Kalico replaced with `[danger_options] multi_mcu_trsync_timeout`.
+  Set trsync timeout in `danger_options`, disable HH's `update_trsync: 0`.
+- **Water cooling sensor pin conflict**: `water_cooling_thermistor.cfg` and
+  `motor_thermistors.cfg` motor_4 both use `mcu:e_sensor_pin`. Water cooling
+  is not in the active include chain — resolve before enabling.
+- **Thermal expansion offset clamping**: `_BEACON_SET_NOZZLE_TEMP_OFFSET`
+  clamps to `max_thermal_offset` from `_PRINTER_VARS` and logs an error
+  instead of halting. A bad coefficient won't crash the nozzle into the bed.
 
 ## Testing
 - No automated tests. Changes are verified by:
