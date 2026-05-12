@@ -111,6 +111,10 @@
 - **Thermal expansion offset clamping**: `_BEACON_SET_NOZZLE_TEMP_OFFSET`
   clamps to `max_thermal_offset` from `_PRINTER_VARS` and logs an error
   instead of halting. A bad coefficient won't crash the nozzle into the bed.
+- **MPC deploy requires three things**: (1) `control: mpc` in extruder config,
+  (2) MPC parameters (heater_power, cooling_fan, filament_*), and (3) remove
+  old PID values from the SAVE_CONFIG block. Missing any one silently keeps
+  PID active — `MPC_CALIBRATE` won't even register as a command.
 
 ## Testing
 - No automated tests. Changes are verified by:
