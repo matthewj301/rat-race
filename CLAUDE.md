@@ -115,6 +115,10 @@
   (2) MPC parameters (heater_power, cooling_fan, filament_*), and (3) remove
   old PID values from the SAVE_CONFIG block. Missing any one silently keeps
   PID active — `MPC_CALIBRATE` won't even register as a command.
+- **Klipper macro boolean coercion**: `variable_foo: True` in a macro is
+  returned as the *string* `"True"`, not a Python bool. `"False"` is also
+  truthy. Always use `|lower == 'true'` for reliable boolean checks, never
+  bare `|default(false)` without the string comparison.
 
 ## Testing
 - No automated tests. Changes are verified by:
