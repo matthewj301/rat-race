@@ -5,7 +5,7 @@
 - BTT Octopus Max EZ V1.0 main MCU, EBB42 v1.2 toolboard
 - TMC5160 @ 48V (XY), TMC2209 @ 24V (Z)
 - Beacon RevH probe (contact mode, thermal expansion compensation)
-- Happy Hare MMU (Tradrack 1.0e, 8 gates) on BTT MMB dedicated MCU
+- Happy Hare MMU (Tradrack 1.0e, 4 gates) on BTT MMB dedicated MCU
 - EREC-style filament cutter on Tradrack, servo on BTT MMB PA2 (RGB port)
 - Servo-deployed nozzle wiper
 
@@ -73,6 +73,16 @@
   overwritten on reload, but stubs must parse without error at startup.
 - **Saved variables**: Changing names in `klipper-variables.cfg` requires migrating
   the file on the printer. Don't rename `variable_*` in saved vars casually.
+- **MMU saved vars live in `klipper-variables.cfg`, NOT `mmu/mmu_vars.cfg`**:
+  Klipper allows only one `[save_variables]`. The active one is in
+  `custom/default_includes.cfg` → `klipper-variables.cfg`. HH's own
+  `[save_variables] filename: mmu/mmu_vars.cfg` is commented out in
+  `mmu_macro_vars.cfg`, so **`mmu/mmu_vars.cfg` is an orphaned dead file** — HH
+  never reads or writes it. All `mmu_selector_offsets`, `mmu_calibration_*`,
+  `mmu_state_gate_*` etc. are in `klipper-variables.cfg`. Editing `mmu_vars.cfg`
+  does nothing. This bit us once: calibrated selector offsets `[22.6, ...]` sat in
+  the orphan while HH ran stale `[0.2, ...]` from the active file, parking T0 on
+  the endstop. Always grep `klipper-variables.cfg` for MMU state.
 - **`printer['gcode'].commands['X']`**: Unstable internal API. Prefer
   `printer.configfile.config["gcode_macro X"] is defined` instead (see PRINT_START
   for the established pattern).
