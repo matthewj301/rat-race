@@ -128,3 +128,10 @@ type = web
 persistent_files = 
 	config.json
 
+[update_manager fluidd-config]
+managed_services = klipper
+origin = https://github.com/fluidd-core/fluidd-config.git
+path = /home/pi/fluidd-config
+primary_branch = master
+type = git_repo
+
