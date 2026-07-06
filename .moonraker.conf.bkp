@@ -120,3 +120,11 @@ requirements = scripts/KlipperScreen-requirements.txt
 install_script = scripts/KlipperScreen-install.sh
 managed_services = KlipperScreen
 
+[update_manager fluidd]
+path = /home/pi/fluidd
+repo = fluidd-core/fluidd
+channel = stable
+type = web
+persistent_files = 
+	config.json
+
