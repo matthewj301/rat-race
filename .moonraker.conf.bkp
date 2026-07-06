@@ -50,13 +50,6 @@ origin = https://github.com/kyleisah/Klipper-Adaptive-Meshing-Purging.git
 managed_services = klipper
 primary_branch = main
 
-[update_manager DynamicMacros]
-type = git_repo
-path = /home/pi/DynamicMacros
-origin = https://github.com/3DCoded/DynamicMacros.git
-primary_branch = main
-is_system_service = False
-
 [update_manager beacon]
 type = git_repo
 channel = dev
@@ -127,11 +120,4 @@ channel = stable
 type = web
 persistent_files = 
 	config.json
-
-[update_manager fluidd-config]
-managed_services = klipper
-origin = https://github.com/fluidd-core/fluidd-config.git
-path = /home/pi/fluidd-config
-primary_branch = master
-type = git_repo
 
