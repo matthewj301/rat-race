@@ -17,12 +17,18 @@
 - motors_sync module active (`custom/tuning/motor_sync.cfg`); PRINT_START
   calls `SYNC_MOTORS`
 - MPC extruder temp control (requires `MPC_CALIBRATE` on printer after deploy)
-- DynamicMacros plugin, installed on the printer as
-  `klippy/extras/dynamicmacros.py`; macros in `custom/macros/dynamic_macros/`
-  use its `!!include` / `!python` syntax
+- Kalico-native Python macros: `gcode: !!include <file>.py` and `!`-prefixed
+  Python lines are handled by Kalico itself (configfile getscript +
+  gcode_macro Python templates providing emit/wait_moves/sleep/
+  set_gcode_variable/respond_info/math). The old DynamicMacros plugin is
+  unused and removed. Macros live in `custom/macros/dynamic_macros/`.
 
 ## Workflow
-- Edit locally in this repo, then push to the printer host to deploy.
+- Edit locally in this repo, then deploy via git: commit + push, then `git pull`
+  in `/home/pi/printer_data/config` on the printer (it's a checkout of this repo
+  with an automated-backup job — **never rsync/scp into it**, that dirties the
+  tree and breaks the sync; `klipper-variables.cfg` is always locally modified
+  there, never `reset --hard` over it).
   No automated tests — verify every change before deploy:
   1. Grep for stale variable references across `custom/` and `printer.cfg`
   2. Cross-reference `printer["gcode_macro X"].variable_name` against declarations
@@ -36,8 +42,8 @@
 - `custom/macros/print.cfg` — PRINT_START, PRINT_END, PAUSE, RESUME, CANCEL_PRINT, M600
 - `custom/macros/heating_cooling.cfg` — PREHEAT, COOLDOWN_SEQUENCE
 - `custom/macros/nozzle_cleaner.cfg` — CLEAN_NOZZLE, `_WIPER_VARS` (wiper coordinates/speeds)
-- `custom/macros/dynamic_macros/` — Toolhead-assisted chamber heating
-  (TA_CHAMBER_HEAT; loop lives in `custom/macros/python/chamber_heating.py`)
+- `custom/macros/dynamic_macros/` — Kalico-native Python macros; Toolhead-assisted
+  chamber heating (TA_CHAMBER_HEAT; loop lives in `custom/macros/python/chamber_heating.py`)
 - `custom/macros/thermal_expansion_compensation.cfg` — Beacon nozzle expansion
 - `klipper-variables.cfg` — Persistent saved variables (SAVE_VARIABLE target)
 - `mmu/base/mmu_macro_vars.cfg` — Happy Hare macro tuning (tip forming, parking, post-unload extension)
@@ -60,11 +66,12 @@
 - **ACCEL_TO_DECEL**: Deprecated in Kalico. Use `MINIMUM_CRUISE_RATIO` instead.
 - **z_tilt_ng**: Kalico replacement for z_tilt. Check `printer.z_tilt_ng` first, then
   fall back to `printer.z_tilt`.
-- **DynamicMacros syntax**: files in `custom/macros/dynamic_macros/` use the
-  plugin's `!!include <file>` and `!python(...)` directives — not valid
-  vanilla Klipper Jinja. Don't lint them as standard macros. The
-  auto-generated `.dynamicmacros.cfg` stub is gone; it appears only in
-  pre-2026 config backups on the printer.
+- **Kalico Python macros**: files in `custom/macros/dynamic_macros/` use
+  Kalico-native `!!include <file>.py` / `!`-prefix Python — not vanilla
+  Klipper Jinja. Don't lint them as standard macros, and validate their
+  Python against Kalico's `gcode_macro.py` helper API (emit, wait_moves,
+  sleep, set_gcode_variable, respond_info, math, own_vars), not the old
+  DynamicMacros plugin.
 - **Saved variables**: Changing names in `klipper-variables.cfg` requires migrating
   the file on the printer. Don't rename `variable_*` in saved vars casually.
 - **MMU saved vars live in `klipper-variables.cfg`, NOT `mmu/mmu_vars.cfg`**:
@@ -107,6 +114,17 @@
   check `printer.mmu.enabled` and skip retraction/parking when HH is active
   to avoid double-actions. HH does NOT manage standby temp for user-initiated
   pauses — our macros handle that in both paths.
+- **`_MMU_SAVE_POSITION`/`_MMU_RESTORE_POSITION` are real HH plumbing — keep
+  the calls in PAUSE/RESUME**: defined in `mmu/base/mmu_sequence.cfg` and
+  called per HH's documented client-macro pattern (save before `PAUSE_BASE`,
+  restore before `RESUME_BASE`, guarded on `printer.mmu.enabled`). Idempotent —
+  HH's Python wrapper also fires them when enabled, so the duplicate is safe.
+- **`mmu/base/` contains absolute symlinks into `/home/pi/addon-packages/Happy-Hare/`**
+  (mmu_sequence.cfg, mmu_software.cfg, mmu_state.cfg, etc.). They dangle on a
+  local checkout, and `grep -r` skips symlinks (`grep -R` follows them). A 2026-07
+  audit wrongly flagged `_MMU_SAVE_POSITION` as undefined because of this. Never
+  declare a macro undefined from a repo grep — confirm on the printer with
+  `curl -s localhost:7125/printer/gcode/help`.
 - **Happy Hare `update_trsync` is a no-op on Kalico**: HH monkey-patches a
   constant that Kalico replaced with `[danger_options] multi_mcu_trsync_timeout`.
   Set trsync timeout in `danger_options`, disable HH's `update_trsync: 0`.
