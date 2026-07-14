@@ -152,9 +152,15 @@ Exceptions raise real gcode errors (they propagate and abort the caller).
 2. `python3 -c "import ast; ast.parse(open('custom/macros/python/chamber_heating.py').read())"`
 3. Cross-reference every new `vars.*` access against `_PRINTER_VARS` declarations
    (`chamber_start_delta` is the new one).
-4. Diff local↔printer for every file you're about to overwrite (printer copies
+4. Diff local↔printer for every file you're about to touch (printer copies
    must match git HEAD — abort on drift, reconcile first).
-5. Deploy, FIRMWARE_RESTART, confirm clean startup in the **current** klippy.log
+5. Deploy via the git flow — the printer's config dir is a git checkout with an
+   automated-backup job: `git push` locally, then `git pull` in
+   `~/printer_data/config` on the printer. **Never rsync/scp into the config
+   dir** (it dirties the working tree and breaks the automated sync). Expect
+   `klipper-variables.cfg` to be locally modified on the printer (live saved
+   variables incl. MMU state) — never `reset --hard` over it. Then
+   FIRMWARE_RESTART and confirm clean startup in the **current** klippy.log
    session (`Start printer at` boundary).
 6. Smoke tests from a cold idle printer: `COOLDOWN_SEQUENCE QUICK=1` then
    `QUICK=0` (filter must keep running until FILTER_DELAYED_STOP fires);

@@ -24,7 +24,11 @@
   unused and removed. Macros live in `custom/macros/dynamic_macros/`.
 
 ## Workflow
-- Edit locally in this repo, then push to the printer host to deploy.
+- Edit locally in this repo, then deploy via git: commit + push, then `git pull`
+  in `/home/pi/printer_data/config` on the printer (it's a checkout of this repo
+  with an automated-backup job — **never rsync/scp into it**, that dirties the
+  tree and breaks the sync; `klipper-variables.cfg` is always locally modified
+  there, never `reset --hard` over it).
   No automated tests — verify every change before deploy:
   1. Grep for stale variable references across `custom/` and `printer.cfg`
   2. Cross-reference `printer["gcode_macro X"].variable_name` against declarations
