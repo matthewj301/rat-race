@@ -90,6 +90,16 @@ Exceptions raise real gcode errors (they propagate and abort the caller).
     before the loop; break on `printer["print_stats"]["state"] in ("cancelled", "error")`
     (not "paused"/"standby" — the loop legitimately runs during PRINT_START);
     call `TA_CHAMBER_STOP` (configfile-defined-guarded) from PAUSE and CANCEL_PRINT.
+    **Known limitation (verified empirically on rat-race):** the mixing loop is ONE
+    gcode command, so it holds the gcode mutex for its whole duration — console
+    `TA_CHAMBER_STOP`, `PAUSE`, and `CANCEL_PRINT` all queue behind it and cannot
+    interrupt it mid-run. This is identical to `M190` semantics and predates the
+    audit; the wired stop/cancel checks only cover flags set before the loop
+    starts. The real mid-run abort is emergency stop (M112 / Moonraker
+    emergency_stop), then FIRMWARE_RESTART — safe, since the loop can run with
+    `BED_TEMP=0 HOTEND_TEMP=0`. A true fix would restructure the loop as a
+    self-rescheduling delayed_gcode (mutex freed between cycles) at the cost of
+    PREHEAT losing its blocking semantics — deliberately not done in this pass.
 
 11. **Servo `initial_angle` must equal the stowed angle** (wiper printers) —
     otherwise every boot twitches the servo.
@@ -149,9 +159,11 @@ Exceptions raise real gcode errors (they propagate and abort the caller).
 6. Smoke tests from a cold idle printer: `COOLDOWN_SEQUENCE QUICK=1` then
    `QUICK=0` (filter must keep running until FILTER_DELAYED_STOP fires);
    `TA_CHAMBER_HEAT TARGET_CHAMBER_TEMP=<below ambient> BED_TEMP=0 HOTEND_TEMP=0`
-   (must complete immediately, no heating); `TA_CHAMBER_HEAT` with a high target
-   and `BED_TEMP=0 HOTEND_TEMP=0` then `TA_CHAMBER_STOP` (must abort);
-   PAUSE → RESUME with MMU enabled (no Unknown command).
+   (must complete immediately, no heating); PAUSE → RESUME with MMU enabled and
+   the printer already homed (no Unknown command; an unhomed printer may fail in
+   HH's wrapper on Beacon contact homing with a cold nozzle — environmental, not
+   a macro bug). Do NOT test mid-run TA_CHAMBER_STOP — it cannot be delivered
+   while the loop runs (see item 10); it would require an emergency stop to recover.
 7. First print: time PRINT_START against a pre-change klippy.log baseline;
    verify first layer unchanged. Second back-to-back print: homing+sync skipped,
    first layer still good.
