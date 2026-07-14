@@ -17,9 +17,11 @@
 - motors_sync module active (`custom/tuning/motor_sync.cfg`); PRINT_START
   calls `SYNC_MOTORS`
 - MPC extruder temp control (requires `MPC_CALIBRATE` on printer after deploy)
-- DynamicMacros plugin, installed on the printer as
-  `klippy/extras/dynamicmacros.py`; macros in `custom/macros/dynamic_macros/`
-  use its `!!include` / `!python` syntax
+- Kalico-native Python macros: `gcode: !!include <file>.py` and `!`-prefixed
+  Python lines are handled by Kalico itself (configfile getscript +
+  gcode_macro Python templates providing emit/wait_moves/sleep/
+  set_gcode_variable/respond_info/math). The old DynamicMacros plugin is
+  unused and removed. Macros live in `custom/macros/dynamic_macros/`.
 
 ## Workflow
 - Edit locally in this repo, then push to the printer host to deploy.
@@ -36,8 +38,8 @@
 - `custom/macros/print.cfg` — PRINT_START, PRINT_END, PAUSE, RESUME, CANCEL_PRINT, M600
 - `custom/macros/heating_cooling.cfg` — PREHEAT, COOLDOWN_SEQUENCE
 - `custom/macros/nozzle_cleaner.cfg` — CLEAN_NOZZLE, `_WIPER_VARS` (wiper coordinates/speeds)
-- `custom/macros/dynamic_macros/` — Toolhead-assisted chamber heating
-  (TA_CHAMBER_HEAT; loop lives in `custom/macros/python/chamber_heating.py`)
+- `custom/macros/dynamic_macros/` — Kalico-native Python macros; Toolhead-assisted
+  chamber heating (TA_CHAMBER_HEAT; loop lives in `custom/macros/python/chamber_heating.py`)
 - `custom/macros/thermal_expansion_compensation.cfg` — Beacon nozzle expansion
 - `klipper-variables.cfg` — Persistent saved variables (SAVE_VARIABLE target)
 - `mmu/base/mmu_macro_vars.cfg` — Happy Hare macro tuning (tip forming, parking, post-unload extension)
@@ -60,11 +62,12 @@
 - **ACCEL_TO_DECEL**: Deprecated in Kalico. Use `MINIMUM_CRUISE_RATIO` instead.
 - **z_tilt_ng**: Kalico replacement for z_tilt. Check `printer.z_tilt_ng` first, then
   fall back to `printer.z_tilt`.
-- **DynamicMacros syntax**: files in `custom/macros/dynamic_macros/` use the
-  plugin's `!!include <file>` and `!python(...)` directives — not valid
-  vanilla Klipper Jinja. Don't lint them as standard macros. The
-  auto-generated `.dynamicmacros.cfg` stub is gone; it appears only in
-  pre-2026 config backups on the printer.
+- **Kalico Python macros**: files in `custom/macros/dynamic_macros/` use
+  Kalico-native `!!include <file>.py` / `!`-prefix Python — not vanilla
+  Klipper Jinja. Don't lint them as standard macros, and validate their
+  Python against Kalico's `gcode_macro.py` helper API (emit, wait_moves,
+  sleep, set_gcode_variable, respond_info, math, own_vars), not the old
+  DynamicMacros plugin.
 - **Saved variables**: Changing names in `klipper-variables.cfg` requires migrating
   the file on the printer. Don't rename `variable_*` in saved vars casually.
 - **MMU saved vars live in `klipper-variables.cfg`, NOT `mmu/mmu_vars.cfg`**:

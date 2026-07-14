@@ -4,6 +4,7 @@ bed_target = float(params.get("BED_TEMP", vars["chamber_heat_default_bed_temp"])
 hotend_target = float(params.get("HOTEND_TEMP", vars["default_chamber_assist_extruder_temp"]))
 pattern = params.get("PATTERN", "auto").lower()
 interval_s = float(params.get("INTERVAL_S", vars["chamber_status_interval"]))
+start_delta = float(params.get("START_DELTA", vars["chamber_start_delta"]))
 
 sensor_name = vars["chamber_sensor_name"]
 sensor_key = f"temperature_sensor {sensor_name}"
@@ -27,6 +28,7 @@ else:
 
     max_cycles = int(vars["chamber_heat_max_cycles"])
     reached = False
+    cycle = -1
 
     for cycle in range(max_cycles):
         if int(printer["gcode_macro TA_CHAMBER_STATE"]["stop_requested"]) == 1:
@@ -34,11 +36,17 @@ else:
             respond_info("Chamber mixing aborted by user")
             break
 
-        if printer[sensor_key]["temperature"] >= chamber_target:
+        if printer["print_stats"]["state"] in ("cancelled", "error"):
+            emit("TURN_PART_COOLING_FAN_OFF")
+            respond_info("Chamber mixing aborted - print no longer active")
+            break
+
+        current_chamber_temp = printer[sensor_key]["temperature"]
+        if current_chamber_temp >= chamber_target - start_delta:
             emit(f"M190 S{bed_target}")
             emit(f"M109 S{hotend_target}")
             emit("TURN_PART_COOLING_FAN_OFF")
-            respond_info(f"Chamber reached {round(chamber_target, 1)}C - mixing complete")
+            respond_info(f"Chamber reached {round(current_chamber_temp, 1)}C (target {round(chamber_target, 1)}C) - mixing complete")
             reached = True
             break
 
