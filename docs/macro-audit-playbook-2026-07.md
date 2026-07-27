@@ -148,11 +148,15 @@ Exceptions raise real gcode errors (they propagate and abort the caller).
     {% if quick == 0 and soak_minutes > 0 and not (use_dynamic_heating and chamber_at_target) %}
     ```
 
-15. **`chamber_start_delta` tunable** (`_PRINTER_VARS`, default 0): lets the
+15. **`chamber_start_delta` tunable** (`_PRINTER_VARS`): lets the
     chamber loop exit at `target - delta`; thermal momentum covers the rest during
     cal/clean/purge. Read in chamber_heating.py via
-    `float(params.get("START_DELTA", vars["chamber_start_delta"]))`. Start at 0,
-    raise to 2–3 after validating a print.
+    `float(params.get("START_DELTA", vars["chamber_start_delta"]))`. **Set to 3**
+    across rat-race/doomcube/K3D (deployed 2026-07-26) — trims the slow asymptotic
+    top-end off the `TA_CHAMBER_HEAT` block. Dial back to 2 on any enclosure that
+    reads cool at layer 1; each recovers differently. K3D was brought to parity in
+    the same pass (added the var, switched its loop from exact-target to
+    `target - delta`, and flipped its max-cycles fallback from abort → continue).
 
 16. **Rename mm/min locals.** Jinja locals holding `* 60` values must be
     `*_feedrate`, not `*_speed` (park/homing macros). Cosmetic but prevents 60x
